@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>Icon Constructor</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-4-grid@3.4.0/css/grid.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            list-style: none;
+        }
+
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            /* padding: 5rem; */
+        }
+
+        main {
+            padding: 200px 0;
+            width: 1024px;
+            margin: 0 auto;
+            display: flex;
+
+        }
+
+        .main {
+            min-height: 100vh;
+            padding-top: 5rem;
+            padding-bottom: 5rem;
+        }
+
+        .preview {
+            margin: -15px 0;
+        }
+
+        .preview-box {
+            padding: 15px 0;
+            overflow: hidden;
+        }
+
+        .preview-icon {
+            width: 100%;
+            position: relative;
+        }
+
+        .preview-box__inner {
+            padding: 15px;
+            overflow: hidden;
+        }
+
+        .preview-icon__canvas {
+            padding: 16px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .square:after {
+            content: "";
+            display: block;
+            padding-bottom: 100%;
+        }
+
+        button {
+            width: 100%;
+            font-family: Helvetica, Arial, sans-serif;
+            font-weight: 500;
+            font-size: 16px;
+            line-height: 1.2;
+            padding: 10px 16px;
+            text-align: center;
+            vertical-align: middle;
+            -webkit-border-radius: 4px;
+            border-radius: 4px;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            background-color: #1a89e8;
+            color: #fff;
+            border: 0;
+            transition: box-shadow .25s, background-color .25s;
+        }
+
+        button:hover {
+            background-color: #2b7de9;
+            -webkit-box-shadow: 0 1px 2px 0 rgba(66, 133, 244, 0.3), 0 1px 3px 1px rgba(66, 133, 244, 0.15);
+            box-shadow: 0 1px 2px 0 rgba(66, 133, 244, 0.3), 0 1px 3px 1px rgba(66, 133, 244, 0.15);
+        }
+
+        button svg {
+            margin-right: 4px;
+        }
+
+        textarea {
+            padding: 10px;
+            line-height: 1.5;
+            display: block;
+            width: 100%;
+            resize: vertical;
+        }
+
+        .bordered {
+            -webkit-border-radius: 4px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-shadow: 1px 1px 1px #999;
+        }
+
+        .controls {
+            text-align: center;
+        }
+
+        #preview-icon-scale-4-1 > * {
+            transform: scale(4);
+            transform-origin: left top;
+        }
+
+        .html-code-input {
+            width: 100%;
+            padding: 16px;
+        }
+
+        .html-code-input__inner {
+            position: relative;
+            min-height: 350px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row align-center main">
+        <div class="col-lg-8">
+            <div class="controls">
+                <div class="bordered html-code-input">
+                    <div class="html-code-input__inner">
+                        <div id="html-editor"></div>
+                    </div>
+                </div>
+                <button class="button" id="download-button" style="margin: 16px 0 0">
+                    <i class="fas fa-file-download"></i>
+                    download
+                </button>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="preview">
+                <div class="preview-box">
+                    <div class="preview-box__inner square bordered">
+                        <div class="preview-title"><b>Scale:</b> 1 to 1</div>
+                        <div class="preview-icon">
+                            <div class="preview-icon__canvas" id="preview-icon-scale-1-1"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="preview-box">
+                    <div class="preview-box__inner square bordered">
+                        <div class="preview-title"><b>Scale:</b> 4 to 1</div>
+                        <div class="preview-icon">
+                            <div class="preview-icon__canvas" id="preview-icon-scale-4-1"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script defer src="fontawesome-pro/js/all.min.js?v=6.10"></script>
+<script src="https://unpkg.com/codeflask@1.4.1/build/codeflask.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/computed-style-to-inline-style@3.0.0/dist/index.js"></script>
+<script>
+  // инициализация html редактора для ввода кода
+  const flask = new CodeFlask('#html-editor', {language: 'html'});
+
+  // на событие update в редакторе кода обновим разметку в окнах превью
+  flask.onUpdate(code => {
+    document.getElementById('preview-icon-scale-1-1').innerHTML = code;
+    document.getElementById('preview-icon-scale-4-1').innerHTML = code;
+  });
+
+  function saveSvg(innerHtml, isSvg) {
+    const svgBlob = (innerHtml) => {
+      const svgEl = document.createElement('svg');
+      svgEl.innerHTML = innerHtml;
+      svgEl.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      const preface = '<?xml version="1.0" standalone="no"?>\r\n';
+
+      const svgData = svgEl.outerHTML;
+      return new Blob([preface, svgData], {
+        type: 'image/svg+xml;charset=utf-8'
+      });
+    };
+
+    const htmlBlob = (innerHtml) => {
+      const template = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        </head>
+        <body>
+        ${innerHtml}
+        <script defer src="fontawesome-pro/js/all.min.js?v=6.10"/>
+        </body>
+        </html>
+      `;
+
+      return new Blob([template], {
+        type: 'text/html'
+      });
+    };
+
+
+    const svgUrl = URL.createObjectURL(isSvg ? svgBlob(innerHtml) : htmlBlob(innerHtml));
+    const downloadLink = document.createElement('a');
+    downloadLink.href = svgUrl;
+    downloadLink.download = 'combined-icon.' + (isSvg ? 'svg' : 'html');
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+  }
+
+  document
+    .getElementById('download-button')
+    .addEventListener('click', () => {
+
+      const canvas = document.getElementById('preview-icon-scale-1-1');
+      if (!canvas.firstChild) return;
+      const isSVG = canvas.firstChild.tagName.toLowerCase() === 'svg';
+
+      // Array.prototype.forEach.call(canvas.querySelectorAll('svg'), svgItem => {
+      //   const newNode = svgItem.cloneNode(true);
+      //   toSave.appendChild(newNode);
+      // });
+
+      saveSvg(canvas.innerHTML, isSVG);
+    });
+</script>
+</body>
+</html>
+
